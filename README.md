@@ -1,3 +1,5 @@
+this is a fork to attempt to resolve incompatibility issues with Homebridge 2.0.
+
 # homebridge-platform-linktap
 
 A [Homebridge](https://homebridge.io) plugin for [LinkTap](https://www.link-tap.com) wireless water timers.
