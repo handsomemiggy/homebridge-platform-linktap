@@ -11,10 +11,10 @@ var username, apiKey, gatewayId;
 
 // Parse a battery/signal value that may arrive as a number (85) or a string ("85%")
 function parsePercent(val) {
-  If (val === null || val === undefined) return null;
-  If (typeof val === 'number') return Math.max(0, Math.min(100, Math.round(val)));
+  if (val === null || val === undefined) return null;
+  if (typeof val === 'number') return Math.max(0, Math.min(100, Math.round(val)));
   var m = String(val).match(/(\d+(\.\d+)?)/);
-  Return m ? Math.max(0, Math.min(100, Math.round(parseFloat(m[1])))) : null;
+  return m ? Math.max(0, Math.min(100, Math.round(parseFloat(m[1])))) : null;
 }
 
 Module.exports = function(homebridge) {
@@ -61,10 +61,10 @@ Module.exports = function(homebridge) {
 function LinkTapPlatform(log, config, api) {
   This.log = log;
 
-  If (!config) {
+  if (!config) {
     Log.warn("Ignoring LinkTap Platform setup because it is not configured");
     This.disabled = true;
-    Return;
+    return;
   }
   This.config = config;
   This.verboseStatusLog = config.verboseStatusLog === true;
@@ -80,10 +80,10 @@ LinkTapPlatform.prototype.accessories = function(callback) {
   var that = this;
   That.accessoryList = [];
 
-  If (!that.config.taps || !Array.isArray(that.config.taps)) {
+  if (!that.config.taps || !Array.isArray(that.config.taps)) {
     That.log.warn("No 'taps' array found in config - check your LinkTap configuration");
     Callback(that.accessoryList);
-    Return;
+    return;
   }
 
   That.config.taps.forEach(function(tap) {
@@ -98,12 +98,12 @@ LinkTapPlatform.prototype._startPolling = function() {
   var that = this;
   var minutes = this.config.pollInterval;
 
-  If (minutes === 0) {
+  if (minutes === 0) {
     This.log("Status polling disabled (pollInterval = 0); battery and signal will not update");
-    Return;
+    return;
   }
-  If (minutes === undefined || minutes === null) minutes = DEFAULT_POLL_MINUTES;
-  If (minutes < MIN_POLL_MINUTES) {
+  if (minutes === undefined || minutes === null) minutes = DEFAULT_POLL_MINUTES;
+  if (minutes < MIN_POLL_MINUTES) {
     This.log.warn("pollInterval %d is below the API minimum of %d minutes; using %d",
       Minutes, MIN_POLL_MINUTES, MIN_POLL_MINUTES);
     Minutes = MIN_POLL_MINUTES;
@@ -119,9 +119,9 @@ LinkTapPlatform.prototype._startPolling = function() {
 LinkTapPlatform.prototype._pollStatus = function() {
   var that = this;
   This._fetchDevices(function(err, parsed) {
-    If (err) {
+    if (err) {
       That.log.error("getAllDevices request failed: %s", err.message);
-      Return;
+      return;
     }
     That._applyStatus(parsed);
   });
@@ -140,8 +140,8 @@ LinkTapPlatform.prototype._fetchDevices = function(callback) {
     var responseBody = '';
     Res.on('data', function(chunk) { responseBody += chunk; });
     Res.on('end', function() {
-      If (res.statusCode < 200 || res.statusCode >= 300) {
-        Return callback(new Error("getAllDevices returned HTTP " + res.statusCode));
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return callback(new Error("getAllDevices returned HTTP " + res.statusCode));
       }
       Try {
         Callback(null, JSON.parse(responseBody));
@@ -158,14 +158,14 @@ LinkTapPlatform.prototype._fetchDevices = function(callback) {
 
 LinkTapPlatform.prototype.fetchLiveMode = function(taplinkerId, callback) {
   This._fetchDevices(function(err, parsed) {
-    If (err) return callback(err);
+    if (err) return callback(err);
     var gateways = parsed.devices || parsed.deviceList || [];
     var mode = null;
     Gateways.forEach(function(gw) {
       var list = gw.taplinker || gw.deviceList || gw.devices || [];
       List.forEach(function(d) {
         var id = d.taplinkerId || d.deviceId || d.id;
-        If (id && String(id).toUpperCase() === String(taplinkerId).toUpperCase() && d.workMode !== undefined) {
+        if (id && String(id).toUpperCase() === String(taplinkerId).toUpperCase() && d.workMode !== undefined) {
           Mode = WORKMODE_TO_SCHEDULE[d.workMode] || null;
         }
       });
@@ -185,29 +185,29 @@ LinkTapPlatform.prototype._applyStatus = function(parsed) {
     List.forEach(function(d) { taplinkers.push(d); });
   });
 
-  If (taplinkers.length === 0) {
+  if (taplinkers.length === 0) {
     Debug("getAllDevices returned no taplinkers to match");
-    Return;
+    return;
   }
 
   Taplinkers.forEach(function(d) {
     var id = d.taplinkerId || d.deviceId || d.id;
-    If (!id) return;
+    if (!id) return;
 
     var accessory = that.accessoryList.find(function(a) {
-      Return a.taplinkerId && a.taplinkerId.toUpperCase() === String(id).toUpperCase();
+      return a.taplinkerId && a.taplinkerId.toUpperCase() === String(id).toUpperCase();
     });
-    If (!accessory) return;
+    if (!accessory) return;
 
     var battery = parsePercent(d.batteryStatus !== undefined ? D.batteryStatus : d.battery);
     var signal = parsePercent(d.signal);
     var online;
-    If (d.status !== undefined) {
+    if (d.status !== undefined) {
       Online = (d.status === true || d.status === 'Connected' || d.status === 'online');
     }
 
     var watering;
-    If (d.watering !== undefined) {
+    if (d.watering !== undefined) {
       Watering = (d.watering !== null && d.watering !== false);
     }
 
@@ -216,26 +216,26 @@ LinkTapPlatform.prototype._applyStatus = function(parsed) {
       D.noWater, d.valveBroken, d.fall, d.fallFlag, d.leakFlag, d.clogFlag, d.pcFlag, d.pbFlag, d.freeze, d.freezeFlag, d.frzFlag
     ];
     var anyFaultField = faultFlags.some(function(v) { return v !== undefined; });
-    If (anyFaultField || d.alert !== undefined || d.alerts !== undefined) {
+    if (anyFaultField || d.alert !== undefined || d.alerts !== undefined) {
       Fault = faultFlags.some(function(v) { return v === true || v === 1 || v === 'true'; });
-      If (!fault && d.alert) fault = true;
-      If (!fault && Array.isArray(d.alerts) && d.alerts.length > 0) fault = true;
+      if (!fault && d.alert) fault = true;
+      if (!fault && Array.isArray(d.alerts) && d.alerts.length > 0) fault = true;
     }
 
     var volumeMl;
-    If (d.vol !== undefined && typeof d.vol === 'number') {
+    if (d.vol !== undefined && typeof d.vol === 'number') {
       VolumeMl = d.vol;
     } else if (d.vel !== undefined && typeof d.vel === 'number') {
       VolumeMl = d.vel;
     }
 
-    If (d.workMode !== undefined) {
+    if (d.workMode !== undefined) {
       var mapped = WORKMODE_TO_SCHEDULE[d.workMode];
-      If (mapped) accessory._detectedMode = mapped;
+      if (mapped) accessory._detectedMode = mapped;
     }
 
     var paused;
-    If (d.watactivated !== undefined) {
+    if (d.watactivated !== undefined) {
       Paused = (d.watactivated === false);
     } else if (d.paused !== undefined) {
       Paused = (d.paused === true || d.paused === 1);
@@ -292,13 +292,13 @@ LinkTapAccessory.prototype.getServices = function() {
     .setCharacteristic(Characteristic.SerialNumber, this.taplinkerId);
   This.informationService = informationService;
 
-  Return [informationService, this._service, this._batteryService, this._faultService, this._scheduleService];
+  return [informationService, this._service, this._batteryService, this._faultService, this._scheduleService];
 };
 
 LinkTapAccessory.prototype.getTapService = function() {
   var tapService;
 
-  If (this.useValve) {
+  if (this.useValve) {
     TapService = new Service.Valve(this.name);
 
     TapService.getCharacteristic(Characteristic.Active)
@@ -333,7 +333,7 @@ LinkTapAccessory.prototype.getTapService = function() {
   TapService.getCharacteristic(Characteristic.WaterVolume)
     .on('get', function(cb) { cb(null, this._volume); }.bind(this));
 
-  Return tapService;
+  return tapService;
 };
 
 LinkTapAccessory.prototype.getScheduleService = function() {
@@ -341,14 +341,14 @@ LinkTapAccessory.prototype.getScheduleService = function() {
   PauseService.getCharacteristic(Characteristic.On)
     .on('get', function(cb) { cb(null, this._paused === 1); }.bind(this))
     .on('set', this._setSchedule.bind(this));
-  Return pauseService;
+  return pauseService;
 };
 
 LinkTapAccessory.prototype.getFaultService = function() {
   var faultService = new Service.LeakSensor(this.name + " Alert");
   FaultService.getCharacteristic(Characteristic.LeakDetected)
     .on('get', function(cb) { cb(null, this._fault); }.bind(this));
-  Return faultService;
+  return faultService;
 };
 
 LinkTapAccessory.prototype.getBatteryService = function() {
@@ -366,67 +366,67 @@ LinkTapAccessory.prototype.getBatteryService = function() {
     Characteristic.ChargingState.NOT_CHARGEABLE
   );
 
-  Return batteryService;
+  return batteryService;
 };
 
 LinkTapAccessory.prototype.updateStatus = function(batteryPct, signalPct, online, watering, fault, paused, volumeMl) {
-  If (batteryPct !== null && batteryPct !== undefined) {
+  if (batteryPct !== null && batteryPct !== undefined) {
     This._batteryLevel = batteryPct;
     This._statusLowBattery = batteryPct <= LOW_BATTERY_THRESHOLD ? 1 : 0;
-    If (this._batteryService) {
+    if (this._batteryService) {
       This._batteryService.updateCharacteristic(Characteristic.BatteryLevel, this._batteryLevel);
       This._batteryService.updateCharacteristic(Characteristic.StatusLowBattery, this._statusLowBattery);
     }
   }
 
-  If (signalPct !== null && signalPct !== undefined) {
+  if (signalPct !== null && signalPct !== undefined) {
     This._signal = signalPct;
   }
 
-  If (online !== null && online !== undefined) {
-    If (online !== this._online) {
+  if (online !== null && online !== undefined) {
+    if (online !== this._online) {
       This.log("%s is now %s", this.name, online ? "online" : "offline");
     }
     This._online = online;
-    If (this._service) {
+    if (this._service) {
       This._service.updateCharacteristic(Characteristic.StatusFault, online ? 0 : 1);
     }
   }
 
-  If (watering !== null && watering !== undefined) {
+  if (watering !== null && watering !== undefined) {
     var newInUse = watering ? 1 : 0;
-    If (newInUse !== this._inUse) {
+    if (newInUse !== this._inUse) {
       This.log("%s %s", this.name, watering ? "started watering" : "stopped watering");
       This._inUse = newInUse;
       This._active = newInUse;
       This._reflectWateringState();
-      If (!watering) this._resetTimer();
+      if (!watering) this._resetTimer();
     }
   }
 
-  If (fault !== null && fault !== undefined) {
+  if (fault !== null && fault !== undefined) {
     This._fault = fault ? 1 : 0;
-    If (this._faultService) {
+    if (this._faultService) {
       This._faultService.updateCharacteristic(Characteristic.LeakDetected, this._fault);
     }
-    If (this._fault) this.log.warn("%s reported an alert/fault condition", this.name);
+    if (this._fault) this.log.warn("%s reported an alert/fault condition", this.name);
   }
 
-  If (paused !== null && paused !== undefined) {
+  if (paused !== null && paused !== undefined) {
     var newPaused = paused ? 1 : 0;
-    If (newPaused !== this._paused) {
+    if (newPaused !== this._paused) {
       This._paused = newPaused;
-      If (this._scheduleService) {
+      if (this._scheduleService) {
         This._scheduleService.updateCharacteristic(Characteristic.On, this._paused === 1);
       }
     }
   }
 
-  If (volumeMl !== null && volumeMl !== undefined) {
+  if (volumeMl !== null && volumeMl !== undefined) {
     var litres = Math.round((volumeMl / 1000) * 10) / 10;
-    If (litres !== this._volume) {
+    if (litres !== this._volume) {
       This._volume = litres;
-      If (this._service) {
+      if (this._service) {
         This._service.updateCharacteristic(Characteristic.WaterVolume, this._volume);
       }
     }
@@ -450,7 +450,7 @@ LinkTapAccessory.prototype._setActive = function(value, callback) {
   This._active = on ? 1 : 0;
   This._inUse = on ? 1 : 0;
 
-  If (this._service) {
+  if (this._service) {
     This._service.updateCharacteristic(Characteristic.InUse, this._inUse);
   }
 
@@ -465,8 +465,8 @@ LinkTapAccessory.prototype._setSwitchOn = function(value, callback) {
 };
 
 LinkTapAccessory.prototype._reflectWateringState = function() {
-  If (!this._service) return;
-  If (this.useValve) {
+  if (!this._service) return;
+  if (this.useValve) {
     This._service.updateCharacteristic(Characteristic.InUse, this._inUse);
     This._service.updateCharacteristic(Characteristic.Active, this._active);
   } else {
@@ -478,19 +478,19 @@ LinkTapAccessory.prototype.turnOnTheTap = function(on, callback) {
   This.log("Setting tap state to " + on);
   Debug("Request for taplinker %s (gateway %s)", this.taplinkerId, gatewayId);
 
-  If (this._pendingOffTimer) {
+  if (this._pendingOffTimer) {
     ClearTimeout(this._pendingOffTimer);
     This._pendingOffTimer = null;
   }
 
   This._resetTimer();
 
-  If (on) {
+  if (on) {
     This._sendInstantMode(true, callback);
     This._startTimer();
   } else {
     var elapsed = Date.now() - this._lastApiCall;
-    If (elapsed >= RATE_LIMIT_MS) {
+    if (elapsed >= RATE_LIMIT_MS) {
       This._sendInstantMode(false, callback);
     } else {
       var wait = RATE_LIMIT_MS - elapsed;
@@ -532,19 +532,19 @@ LinkTapAccessory.prototype._sendInstantMode = function(on, callback) {
     Res.on('data', function(chunk) { responseBody += chunk; });
     Res.on('end', function() {
       Debug('STATUS: ', res.statusCode, responseBody);
-      If (res.statusCode >= 200 && res.statusCode < 300) {
-        If (callback) callback();
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        if (callback) callback();
       } else {
         var err = new Error("LinkTap API returned HTTP " + res.statusCode);
         Self.log.error(err.message);
-        If (callback) callback(err);
+        if (callback) callback(err);
       }
     });
   });
 
   Req.on('error', function(error) {
     Self.log.error("LinkTap API request failed: %s", error.message);
-    If (callback) callback(error);
+    if (callback) callback(error);
   });
 
   Req.write(body);
@@ -554,7 +554,7 @@ LinkTapAccessory.prototype._sendInstantMode = function(on, callback) {
 LinkTapAccessory.prototype._setSchedule = function(value, callback) {
   var pause = (value === true || value === 1);
   This._paused = pause ? 1 : 0;
-  If (pause) {
+  if (pause) {
     This._pauseWateringPlan(callback);
   } else {
     This._resumeWateringPlan(callback);
@@ -596,13 +596,13 @@ LinkTapAccessory.prototype._resumeWateringPlan = function(callback) {
 
   var doResume = function(mode) {
     var endpoint = SCHEDULE_MODE_ENDPOINTS[mode];
-    If (!endpoint) {
+    if (!endpoint) {
       Self.log.warn("%s: could not determine the active watering mode; skipping " +
         "re-activation to avoid forcing the wrong schedule. The pause will lapse " +
         "on its own after %s.", Self.name,
         Self.pauseHours === -1 ? "the indefinite pause is cleared" : self.pauseHours + "h");
-      If (callback) callback();
-      Return;
+      if (callback) callback();
+      return;
     }
     var data = {
       Username: username,
@@ -614,9 +614,9 @@ LinkTapAccessory.prototype._resumeWateringPlan = function(callback) {
     Self._postLinkTap(endpoint, data, callback);
   };
 
-  If (this.platform && typeof this.platform.fetchLiveMode === 'function') {
+  if (this.platform && typeof this.platform.fetchLiveMode === 'function') {
     This.platform.fetchLiveMode(this.taplinkerId, function(err, liveMode) {
-      If (err) {
+      if (err) {
         Self.log.warn("%s: couldn't read live mode for resume (%s); using %s",
           Self.name, err.message, self._detectedMode || self.scheduleMode);
         DoResume(self._detectedMode || self.scheduleMode);
@@ -645,19 +645,19 @@ LinkTapAccessory.prototype._postLinkTap = function(endpoint, data, callback) {
     Res.on('data', function(chunk) { responseBody += chunk; });
     Res.on('end', function() {
       Debug('%s STATUS: %d %s', endpoint, res.statusCode, responseBody);
-      If (res.statusCode >= 200 && res.statusCode < 300) {
-        If (callback) callback();
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        if (callback) callback();
       } else {
         var err = new Error(endpoint + " returned HTTP " + res.statusCode + " " + responseBody);
         Self.log.error(err.message);
-        If (callback) callback(err);
+        if (callback) callback(err);
       }
     });
   });
 
   Req.on('error', function(error) {
     Self.log.error("%s request failed: %s", endpoint, error.message);
-    If (callback) callback(error);
+    if (callback) callback(error);
   });
 
   Req.write(body);
@@ -685,7 +685,7 @@ LinkTapAccessory.prototype._onTimeout = function() {
 };
 
 LinkTapAccessory.prototype._getDurationTimerValue = function(callback) {
-  This.log("Returning current tap duration value: " + this._durationInSeconds / 60 + " minutes");
+  This.log("returning current tap duration value: " + this._durationInSeconds / 60 + " minutes");
   Callback(this._durationInSeconds);
 };
 
