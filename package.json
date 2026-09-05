@@ -6,9 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
+    "repository": {
     "type": "git",
-    "url": "git+https://github.com/hakt0-r/homebridge-platform-linktap.git"
+    "url": "git+https://github.com/handsomemiggy/homebridge-platform-linktap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/handsomemiggy/homebridge-platform-linktap/issues"
   },
   "keywords": [
     "homebridge-plugin",
