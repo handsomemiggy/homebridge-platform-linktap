@@ -23,9 +23,6 @@
   ],
   "author": "hakt0-r",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/hakt0-r/homebridge-platform-linktap/issues"
-  },
   "homepage": "https://github.com/handsomemiggy/homebridge-platform-linktap#readme",
   "engines": {
     "homebridge": ">=1.6.0",
